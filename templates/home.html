@@ -25,7 +25,9 @@
                     {% endif %}
                     </div>
                     <div class="modal-footer">
-                    <a class="btn btn-primary" href="/edit/{{animes[i].id}}" role="button">Edit</a>
+                    {% if g.user.is_admin %}
+                        <a class="btn btn-primary" href="/edit/{{animes[i].id}}" role="button">Edit</a>
+                    {% endif %}
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     </div>
                 </div>
