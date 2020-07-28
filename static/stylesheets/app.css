@@ -41,5 +41,4 @@ img {
 .anime-wrapper:hover {
     background-color:grey;
     opacity:0.5;
-    cursor: pointer;
 }
