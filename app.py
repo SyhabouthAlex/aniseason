@@ -1,9 +1,10 @@
 import os
 
 from flask import Flask, render_template, request, flash, redirect, session, g
+from sqlalchemy import create_engine, MetaData
 from sqlalchemy.exc import IntegrityError
 from forms import RegisterForm, LoginForm, AnimeEditForm
-from models import db, connect_db, User, Anime
+from models import db, connect_db, User, Anime, Follow
 
 CURR_USER_KEY = "curr_user"
 
@@ -17,6 +18,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "very secret key")
+
+engine = create_engine("postgresql:///aniseason")
+metadata = MetaData()
+metadata.bind = engine
 
 connect_db(app)
 
@@ -45,7 +50,7 @@ def do_logout():
 def homepage():
     """Show all animes in database."""
     try:
-        animes = Anime.query.all()
+        animes = Anime.query.order_by(Anime.member_count.desc(), Anime.year.desc()).all()
         return render_template('home.html', animes=animes, len=len(animes))
     except:
         flash("There was a problem rendering the database.", 'danger')
@@ -58,9 +63,14 @@ def refresh():
     animes = request.json["anime"]
     excluded_types = ["OVA", "ONA", "Movie"]
 
+    db.session.commit()
+    Follow.__table__.drop(engine)
+    Anime.__table__.drop(engine)
+    Anime.__table__.create(engine)
+    Follow.__table__.create(engine)
+
     for anime in animes:
-        if anime["members"] > 10000 and anime["type"] not in excluded_types:
-            print(anime["airing_start"])
+        if anime["members"] > 10000 and anime["type"] not in excluded_types and anime["airing_start"].startswith(str(request.json["season_year"])):
             a = Anime(title=anime["title"], season=request.json["season_name"], year=request.json["season_year"], airing_datetime=anime["airing_start"], image=anime["image_url"],
             description=anime["synopsis"], member_count=anime["members"])
             db.session.add(a)
@@ -68,47 +78,51 @@ def refresh():
     db.session.commit()
     return redirect('/')
 
-@app.route('/register', methods=["GET", "POST"])
+@app.route('/login')
+def login_and_register():
+    """Show login and register forms."""
+
+    register_form = RegisterForm()
+    login_form = LoginForm()
+
+    return render_template('login.html', register_form=register_form, login_form=login_form)
+
+@app.route('/register', methods=["POST"])
 def register():
-    """Handle user registration."""
+    """Handle user registration"""
 
-    form = RegisterForm()
+    register_form = RegisterForm()
+    login_form = LoginForm()
 
-    if form.validate_on_submit():
+    if register_form.validate_on_submit():
         try:
             user = User.register(
-                username=form.username.data,
-                password=form.password.data
+                username=register_form.username.data,
+                password=register_form.password.data
             )
             db.session.commit()
         except IntegrityError:
             flash("Username already taken", 'danger')
-            return render_template('register.html', form=form)
+            return render_template('login.html', register_form=register_form, login_form=login_form)
 
         do_login(user)
         return redirect("/")
-    else:
-        return render_template('register.html', form=form)
 
-
-@app.route('/login', methods=["GET", "POST"])
+@app.route('/login', methods=["POST"])
 def login():
-    """Handle user login."""
+    """Handle user login"""
+    register_form = RegisterForm()
+    login_form = LoginForm()
 
-    form = LoginForm()
-
-    if form.validate_on_submit():
-        user = User.authenticate(form.username.data,
-                                 form.password.data)
+    if login_form.validate_on_submit():
+        user = User.authenticate(login_form.username.data,
+                                 login_form.password.data)
         if user:
             do_login(user)
             flash(f"Hello, {user.username}!", "success")
             return redirect("/")
 
         flash("Invalid credentials.", 'danger')
-
-    return render_template('login.html', form=form)
-
 
 @app.route('/logout')
 def logout():

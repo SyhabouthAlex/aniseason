@@ -36,7 +36,9 @@ class User(db.Model):
 
     followed_animes = db.relationship(
         'Anime',
-        secondary="follows"
+        secondary="follows",
+        backref="followers",
+        cascade="all, delete"
     )
 
     @classmethod
@@ -143,18 +145,16 @@ class Anime(db.Model):
         if self.airing_datetime:
             day = self.airing_datetime.weekday()
             current_day = datetime.now(timezone('US/Pacific')).weekday()
-            
+
             if day >= current_day:
                 days = day - current_day
             else:
                 days = day - current_day + 7
 
             if days == 0:
-                return "The newest episode airs today."
-            elif days == 1:
-                return "The next episode airs in 1 day."
+                return "Newest episode airs today!"
             else:
-                return f"The next episode airs in {days} days."
+                return f"{days} days until new episode"
         else:
             return "No airdate information."
 
