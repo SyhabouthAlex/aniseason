@@ -4,7 +4,7 @@
     <div class="row justify-content-md-center">
         <div class="col">
             <h1 class="form-title">Register</h1>
-            <form method="POST" action="{{ url_for('register') }}" id="user_form">
+            <form method="POST" action="{{ url_for('register') }}" id="userForm">
                 {{ register_form.hidden_tag() }}
 
                 {% for field in register_form if field.widget.input_type != 'hidden' %}
@@ -21,7 +21,7 @@
     <div class="row justify-content-md-center">
         <div class="col">
             <h1 class="form-title">Log In</h1>
-            <form method="POST" action="{{ url_for('login') }}" id="user_form">
+            <form method="POST" action="{{ url_for('login') }}" id="userForm">
                 {{ login_form.hidden_tag() }}
 
                 {% for field in login_form if field.widget.input_type != 'hidden' %}

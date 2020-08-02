@@ -33,7 +33,7 @@ img {
     height: 100%;
     width: 75%;
 }
-.row {
+.col {
     height: fit-content;
     margin-bottom: 5%;
 }

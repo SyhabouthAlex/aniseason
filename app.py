@@ -60,6 +60,10 @@ def homepage():
 def refresh():
     """Refreshes all the animes of the season using an array of animes."""
 
+    if not g.user or not g.user.is_admin:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
     animes = request.json["anime"]
     excluded_types = ["OVA", "ONA", "Movie"]
 
@@ -132,6 +136,23 @@ def logout():
     flash("Successfully logged out.", 'success')
     return redirect("/")
 
+@app.route('/my-list')
+def show_profile():
+    """Show a user's list of the animes they follow"""
+
+    if not g.user:
+        flash("Please log in to use this feature.", "danger")
+        return redirect("/")
+
+    user = g.user
+    
+    try:
+        animes = user.followed_animes
+        return render_template('home.html', animes=animes, len=len(animes), user=user)
+    except:
+        flash("There was a problem rendering your page.", 'danger')
+        return render_template('base.html')
+
 @app.route('/edit/<int:anime_id>', methods=["GET", "POST"])
 def edit_anime(anime_id):
     """Edit anime information."""
@@ -156,3 +177,23 @@ def edit_anime(anime_id):
         return redirect("/")
 
     return render_template('anime-edit.html', form=form)
+
+@app.route('/follow/<int:anime_id>', methods=["POST"])
+def follow_anime(anime_id):
+    """Follow an anime."""
+
+    if not g.user:
+        flash("Please log in to be able to follow an anime.", "danger")
+        return redirect("/")
+
+    anime = Anime.query.get_or_404(anime_id)
+
+    if anime in g.user.followed_animes:
+        g.user.followed_animes = [followed for followed in g.user.followed_animes if followed != anime]
+    else:
+        g.user.followed_animes.append(anime)
+
+    db.session.commit()
+
+    return redirect("/")
+

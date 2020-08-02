@@ -1,51 +1,56 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1 class="season">{{animes[0].season}} {{animes[0].year}}</h1>
-    {% for i in range(len) %}
-        {% if i % 3 == 0 %}
-            <div class="row row-cols-3">
-        {% endif %}
-    <div class="col">
-        <div class="anime-wrapper" data-toggle="modal" data-target="#anime{{i}}">
-            <div class="modal fade" id="anime{{i}}" tabindex="-1" role="dialog" aria-labelledby="anime{{i}}label" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                    <h5 class="modal-title" id="anime{{i}}label">{{animes[i].title}}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+    {% if user %}
+        <h1 class="season">{{user.username}}'s list</h1>
+    {% else %}
+        <h1 class="season">{{animes[0].season}} {{animes[0].year}}</h1>
+    {% endif %}
+    <div class="row row-cols-2 row-cols-lg-3">
+        {% for i in range(len) %}
+            <div class="col">
+                <div class="anime-wrapper" data-toggle="modal" data-target="#anime{{i}}">
+                    <div class="modal fade" id="anime{{i}}" tabindex="-1" role="dialog" aria-labelledby="anime{{i}}label" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="anime{{i}}label">{{animes[i].title}}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            </div>
+                            <div class="modal-body">
+                            {{animes[i].description}}
+                            <br>
+                            {% if animes[i].watch_link %}
+                            Watch now at {{animes[i].watch_link}}
+                            {% endif %}
+                            </div>
+                            <div class="modal-footer">
+                            {% if g.user %}
+                                {% if animes[i] in g.user.followed_animes %}
+                                    <button type="button" class="btn btn-primary follow" data-anime-id="{{animes[i].id}}">Unfollow</button>
+                                {% else %}
+                                    <button type="button" class="btn btn-primary follow" data-anime-id="{{animes[i].id}}">Follow</button>
+                                {% endif %}
+                            {% endif %}
+                            {% if g.user.is_admin %}
+                                <a class="btn btn-primary" href="/edit/{{animes[i].id}}" role="button">Edit</a>
+                            {% endif %}
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                        </div>
                     </div>
-                    <div class="modal-body">
-                    {{animes[i].description}}
-                    <br>
-                    {% if animes[i].watch_link %}
-                    Watch now at {{animes[i].watch_link}}
-                    {% endif %}
+                    <div class="anime-content-wrapper">
+                        <div class="content">
+                            <div class="airtime">{{animes[i].get_day()}}</div>
+                            <div class="title">{{animes[i].title}}</div>
+                            <div class="image"><img src={{animes[i].image}}></div>
+                        </div>
                     </div>
-                    <div class="modal-footer">
-                    {% if g.user.is_admin %}
-                        <a class="btn btn-primary" href="/edit/{{animes[i].id}}" role="button">Edit</a>
-                    {% endif %}
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    </div>
-                </div>
                 </div>
             </div>
-            <div class="anime-content-wrapper">
-                <div class="content">
-                    <div class="airtime">{{animes[i].get_day()}}</div>
-                    <div class="title">{{animes[i].title}}</div>
-                    <div class="image"><img src={{animes[i].image}}></div>
-                </div>
-            </div>
-        </div>
+        {% endfor %}
     </div>
-        {% if i % 3 == 2 %}
-            </div>
-        {% elif i == len - 1 %}
-            </div>
-        {% endif %}
-    {% endfor %}
 {% endblock %}

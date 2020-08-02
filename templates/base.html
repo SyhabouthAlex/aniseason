@@ -12,14 +12,17 @@
     <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-text" href="/">AniSeason</a>
         {% if g.user %}
+        <a class="nav-link ml-auto" href="/my-list">My List</a>
         <a class="nav-link ml-auto" href="/logout">Log Out</a>
         {% else %}
         <a class="nav-link ml-auto" href="/login">Log In</a>
         {% endif %}
     </nav>
-    {% for category, message in get_flashed_messages(with_categories=True) %}
-    <div class="alert alert-{{ category }}">{{ message }}</div>
-    {% endfor %}
+    <div id="flashed-msgs">
+        {% for category, message in get_flashed_messages(with_categories=True) %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
     {% if g.user.is_admin %}
     <div class="container">
         <button id="refresh-animes" type="button" class="btn btn-warning btn-lg btn-block">Refresh Animes</button>
