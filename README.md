@@ -1,11 +1,7 @@
 # AniSeason
-
-See when new episodes of currently airing animes will premiere. Log in and use the follow functionality to track the shows you want to watch.
-
-
+See currently airing shows for this season and when their next episodes will premiere. Register an account and use the follow functionality to track the shows you want to watch on your own personal list.
 
 ## Website
-
 [https://aniseason.herokuapp.com/](https://aniseason.herokuapp.com/)
 
 ## Technologies used
